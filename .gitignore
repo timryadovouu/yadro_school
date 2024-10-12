@@ -2,3 +2,6 @@
 **/.ipynb_checkpoints
 lesson_01/additional/
 lesson_02/additional/
+**/additional/
+math_dir/
+lectures_python/
