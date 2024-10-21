@@ -1,8 +1,5 @@
 .venv
 **/.ipynb_checkpoints
-lesson_01/additional/
-lesson_02/additional/
-lesson_03/additional/
 **/additional/
 math_dir/
 lectures_python/
