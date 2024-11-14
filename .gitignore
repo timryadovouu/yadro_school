@@ -1,8 +1,8 @@
 .venv
+.idea
 .DS_Store
+.ipynb_checkpoints
 **/.ipynb_checkpoints
 **/additional/
 math_dir/
 lectures_python/
-requirements.py
-
