@@ -4,5 +4,7 @@
 .ipynb_checkpoints
 **/.ipynb_checkpoints
 **/additional/
+**/sandbox
+**/docs
 math_dir/
 lectures_python/
