@@ -1,6 +1,8 @@
 FROM python:3.12
 
 RUN pip install rdkit
+RUN pip install sqlalchemy
+RUN pip install psycopg2
 
 WORKDIR /app/
 

@@ -3,8 +3,12 @@
 .DS_Store
 .ipynb_checkpoints
 **/.ipynb_checkpoints
+***/.ipynb_checkpoints
 **/additional/
 **/sandbox
 **/docs
+**/.env
+**/.pytest_cache
+__pycache__
 math_dir/
 lectures_python/
