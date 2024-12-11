@@ -9,7 +9,6 @@ from src.main import app
 from src import models
 
 TEST_DATABASE_URL = "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
-# TEST_DATABASE_URL = "postgresql://fastapi_newbie:password@localhost:5433/molecules_test_db"
 engine = create_engine(TEST_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
