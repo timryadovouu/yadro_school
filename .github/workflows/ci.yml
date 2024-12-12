@@ -30,6 +30,9 @@ jobs:
       - name: Run flake8
         run: flake8 project_1/src/ project_1/tests/ --config=project_1/.flake8
 
+      - name: Install pytest
+        run: pip install pytest
+
       - name: Run tests
         run: |
           pytest project/tests/
