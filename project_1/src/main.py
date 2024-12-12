@@ -1,15 +1,16 @@
 from fastapi import FastAPI, HTTPException, Depends
-from pydantic import BaseModel
-from rdkit import Chem 
-import os
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-import models, database
+from pydantic import BaseModel
+from rdkit import Chem 
+from models import Molecule
+from database import engine, get_db
+import os
 
 
 app = FastAPI()
 
-database.Base.metadata.create_all(bind=database.engine)
+Molecule.metadata.create_all(bind=engine)
 
 class MoleculeResponse(BaseModel):
     id: str
@@ -23,11 +24,11 @@ def get_server():
     return {"server_id": os.getenv("SERVER_ID", "1")}
 
 @app.post("/add")
-def add_molecule(molecule: MoleculeResponse, db: Session = Depends(database.get_db)):
+def add_molecule(molecule: MoleculeResponse, db: Session = Depends(get_db)):
     if Chem.MolFromSmiles(molecule.smiles) is None:
         raise HTTPException(status_code=400, detail="Invalid SMILES.")
 
-    db_molecule = models.Molecule(id=molecule.id, smiles=molecule.smiles)
+    db_molecule = Molecule(id=molecule.id, smiles=molecule.smiles)
     db.add(db_molecule)
     try:
         db.commit()
@@ -39,8 +40,8 @@ def add_molecule(molecule: MoleculeResponse, db: Session = Depends(database.get_
 
 
 @app.get("/search/{id}")
-def get_molecule(id: str, db: Session = Depends(database.get_db)):
-    db_molecule = db.query(models.Molecule).filter(models.Molecule.id == id).first()
+def get_molecule(id: str, db: Session = Depends(get_db)):
+    db_molecule = db.query(Molecule).filter(Molecule.id == id).first()
     if db_molecule is None:
         raise HTTPException(status_code=404, detail="Molecule not found.")
     
@@ -48,14 +49,14 @@ def get_molecule(id: str, db: Session = Depends(database.get_db)):
 
 
 @app.get("/list")
-def list_molecules(db: Session = Depends(database.get_db)):
+def list_molecules(db: Session = Depends(get_db)):
     # return db.query(models.Molecule).all()
-    return {"molecules": {molecule.id: molecule.smiles for molecule in db.query(models.Molecule).all()}}
+    return {"molecules": {molecule.id: molecule.smiles for molecule in db.query(Molecule).all()}}
 
 
 @app.put("/update/{id}")
-def update_molecule(id: str, molecule: MoleculeUpdate, db: Session = Depends(database.get_db)):
-    db_molecule = db.query(models.Molecule).filter(models.Molecule.id == id).first()
+def update_molecule(id: str, molecule: MoleculeUpdate, db: Session = Depends(get_db)):
+    db_molecule = db.query(Molecule).filter(Molecule.id == id).first()
     if db_molecule is None:
         raise HTTPException(status_code=400, detail="Invalid id")
     
@@ -70,8 +71,8 @@ def update_molecule(id: str, molecule: MoleculeUpdate, db: Session = Depends(dat
     return {"message": f"Successfully updated molecule with id: {id}. New value: {molecule.smiles}"}
 
 @app.delete("/delete/{id}")
-def delete_molecule(id: str, db: Session = Depends(database.get_db)):
-    db_molecule = db.query(models.Molecule).filter(models.Molecule.id == id).first()
+def delete_molecule(id: str, db: Session = Depends(get_db)):
+    db_molecule = db.query(Molecule).filter(Molecule.id == id).first()
     if db_molecule is None:
         raise HTTPException(status_code=400, detail="Invalid id")
 
@@ -80,13 +81,13 @@ def delete_molecule(id: str, db: Session = Depends(database.get_db)):
     return {"message": f"Successfully deleted molecule with id: {id}"}
 
 @app.get("/substructure_search/{substructure_smiles}")
-def substructure_search(substructure_smiles: str, db: Session = Depends(database.get_db)):
+def substructure_search(substructure_smiles: str, db: Session = Depends(get_db)):
     substructure = Chem.MolFromSmiles(substructure_smiles)
     if substructure is None:
         raise HTTPException(status_code=400, detail="Invalid substructure SMILES.")
     
     matches = []
-    for db_molecule in db.query(models.Molecule).all():
+    for db_molecule in db.query(Molecule).all():
         if Chem.MolFromSmiles(db_molecule.smiles).HasSubstructMatch(substructure):
             matches.append({"id": db_molecule.id, "smiles": db_molecule.smiles})
     

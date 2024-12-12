@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String
-import database
+from sqlalchemy import Column, String
+from database import Base
 
-class Molecule(database.Base):
+class Molecule(Base):
     __tablename__ = "molecules"
 
     id = Column(String, primary_key=True, index=True)
