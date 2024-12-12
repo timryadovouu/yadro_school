@@ -92,7 +92,7 @@ def list_molecules(limit: int = 100, offset: int = 0, db: Session = Depends(get_
             yield molecule
 
     molecules = {molecule.id: molecule.smiles for molecule in molecule_iterator(limit, offset)}
-    response_data = {"number_of_molecules":molecules_number, "molecules": molecules}
+    response_data = {"number_of_molecules": molecules_number, "molecules": molecules}
     set_cache(cache_key, response_data) 
 
     # return {"molecules": {molecule.id: molecule.smiles for molecule in db.query(Molecule).all()}}
