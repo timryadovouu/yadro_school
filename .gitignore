@@ -8,3 +8,5 @@
 **/docs
 math_dir/
 lectures_python/
+.env
+__pycache__
