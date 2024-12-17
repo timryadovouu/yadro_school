@@ -3,12 +3,19 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from pydantic import BaseModel
 from rdkit import Chem 
-from models import Molecule
-from database import engine, get_db
+from models import Molecule, TaskResult
+from database import engine, get_db, SessionLocal
+from schemas import TaskResultBase
+
 import os
 import logging
 import redis 
 import json
+
+from tasks import substructure_search_task 
+from celery_worker import celery
+from celery.result import AsyncResult 
+
 
 app = FastAPI()
 
@@ -64,6 +71,8 @@ def add_molecule(molecule: MoleculeResponse, db: Session = Depends(get_db)):
 
 @app.get("/search/{id}")
 def get_molecule(id: str, db: Session = Depends(get_db)):
+    logger.info(f"searching for molecule with id: {id}")
+
     db_molecule = db.query(Molecule).filter(Molecule.id == id).first()
     if db_molecule is None:
         logger.error("molecule not found")
@@ -130,17 +139,53 @@ def delete_molecule(id: str, db: Session = Depends(get_db)):
     logger.info(f"successfull delete molecule with id {id}")
     return {"message": f"Successfully deleted molecule with id: {id}"}
 
-@app.get("/substructure_search/{substructure_smiles}")
-def substructure_search(substructure_smiles: str, db: Session = Depends(get_db)):
-    substructure = Chem.MolFromSmiles(substructure_smiles)
-    if substructure is None:
-        logger.error("invalid substructure SMILES")
-        raise HTTPException(status_code=400, detail="Invalid substructure SMILES.")
+## without celery
+# @app.get("/substructure_search/{substructure_smiles}")
+# def substructure_search(substructure_smiles: str, db: Session = Depends(get_db)):
+#     logger.info(f"substructure search for {substructure_smiles}")
+
+#     substructure = Chem.MolFromSmiles(substructure_smiles)
+#     if substructure is None:
+#         logger.error("invalid substructure SMILES")
+#         raise HTTPException(status_code=400, detail="Invalid substructure SMILES.")
     
-    matches = []
-    for db_molecule in db.query(Molecule).all():
-        if Chem.MolFromSmiles(db_molecule.smiles).HasSubstructMatch(substructure):
-            logger.info(f"adding {db_molecule.smiles} as match for {substructure_smiles}")
-            matches.append({"id": db_molecule.id, "smiles": db_molecule.smiles})
+#     cache_key = f"sub_search:{substructure_smiles}" 
+#     cached_result = get_cached_result(cache_key)
+
+#     if cached_result: 
+#         logger.info(f"getting data from cache: {cache_key}")
+#         return {"source": "cache", "data": cached_result}
     
-    return {"matched_molecules": matches}
+#     logger.info(f"getting data from database: {cache_key}")
+#     matches = []
+#     for db_molecule in db.query(Molecule).all():
+#         if Chem.MolFromSmiles(db_molecule.smiles).HasSubstructMatch(substructure):
+#             logger.info(f"adding {db_molecule.smiles} as match for {substructure_smiles}")
+#             matches.append({"id": db_molecule.id, "smiles": db_molecule.smiles})
+
+#     response_data = {"matched_molecules": matches}
+#     set_cache(cache_key, response_data) 
+#     return {"source": "database", "data": response_data}
+
+
+# with celery
+@app.post("/substructure_search/{substructure_smiles}")
+async def substructure_search(substructure_smiles: str):
+    logger.info(f"starting substructure search for {substructure_smiles}")    
+    task = substructure_search_task.delay(substructure_smiles)
+    logger.info(f"Task {task.id} started for substructure {substructure_smiles}")
+    return {"task_id": task.id, "status": task.status}
+
+@app.get("/tasks/{task_id}")
+async def get_task_result(task_id: str): 
+    logger.info(f"fetching results for task {task_id}")
+    task_result = AsyncResult(task_id, app=celery) 
+    if task_result.state == 'PENDING': 
+        logger.info(f"task {task_id} is pending")
+        return {"task_id": task_id, "status": "pending"} 
+    elif task_result.state == 'SUCCESS': 
+        logger.info(f"task {task_id} completed successfully")
+        return {"task_id": task_id, "status": "completed", "data": task_result.result}
+    else: 
+        logger.error(f"task {task_id} failed")
+        return {"task_id": task_id, "status": task_result.state}
