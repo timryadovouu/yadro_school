@@ -1,9 +1,8 @@
 from celery_worker import celery 
 from rdkit import Chem
-from sqlalchemy.orm import Session
-from models import Molecule, TaskResult
-from database import get_db, SessionLocal
-from fastapi import Depends, HTTPException
+from models import Molecule
+from database import SessionLocal
+from fastapi import HTTPException
 import json
 import time
 
