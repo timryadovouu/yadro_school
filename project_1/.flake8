@@ -1,4 +1,0 @@
-[flake8]
-max-line-length = 169
-exclude = __pycache__,docs,sandbox
-ignore = W503, E302, W291, W292, W293, F541, F401, E266

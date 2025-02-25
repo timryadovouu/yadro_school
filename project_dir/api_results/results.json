@@ -1,0 +1,62 @@
+// http:localhost:80/substructure_search/c1ccccc1
+{
+  "task_id": "18278f85-8604-4bb3-91cb-de1282739774",
+  "status": "PENDING"
+}
+
+
+// http:localhost:80/tasks/18278f85-8604-4bb3-91cb-de1282739774
+{
+  "task_id": "18278f85-8604-4bb3-91cb-de1282739774",
+  "status": "completed",
+  "data": {
+    "source": "cache",
+    "matched_molecules": [
+      {
+        "id": "1",
+        "smiles": "c1ccccc1"
+      },
+      {
+        "id": "5",
+        "smiles": "c1ccccc1"
+      }
+    ]
+  }
+}
+
+// ================================================================================================
+// http:localhost:80/tasks/81e75203-e474-4604-b5d9-fb6e255d1668
+{
+  "task_id": "81e75203-e474-4604-b5d9-fb6e255d1668",
+  "status": "STARTED"
+}
+
+{
+  "task_id": "81e75203-e474-4604-b5d9-fb6e255d1668",
+  "status": "completed",
+  "data": {
+    "source": "database",
+    "matched_molecules": [
+      {
+        "id": "1",
+        "smiles": "c1ccccc1"
+      },
+      {
+        "id": "2",
+        "smiles": "C"
+      },
+      {
+        "id": "3",
+        "smiles": "C"
+      },
+      {
+        "id": "4",
+        "smiles": "C"
+      },
+      {
+        "id": "5",
+        "smiles": "c1ccccc1"
+      }
+    ]
+  }
+}

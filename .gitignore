@@ -6,7 +6,6 @@
 ***/.ipynb_checkpoints
 **/additional/
 **/sandbox
-**/docs
 **/.env
 **/.pytest_cache
 __pycache__
@@ -14,3 +13,6 @@ math_dir/
 lectures_python/
 .env
 __pycache__
+cat_136
+*.mp4
+*.mov
