@@ -9,7 +9,6 @@
 **/.env
 **/.pytest_cache
 __pycache__
-math_dir/
 lectures_python/
 .env
 __pycache__
